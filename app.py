@@ -3,8 +3,8 @@
 import numpy as np
 import sqlalchemy
 
-from sqlalchemy.ext.automap import automap_base
 from sqlalchemy import create_engine, func ,inspect
+from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 from flask import Flask, jsonify
 
@@ -36,7 +36,6 @@ app = Flask(__name__)
 
 
 # Query for the dates and temperature observations from the last year.
-
 @app.route("/")
 def home():
     return("/api/v1.0/precipitation<br/>"
@@ -48,65 +47,45 @@ def home():
 def precipitation():
     results1 = session.query(Measurement.date, Measurement.prcp).filter(Measurement.date>="2016-08-23").all()
     first_dict = list(np.ravel(results1))
-#  Convert the query results to a Dictionary using `date` as the key and `tobs` as the value.
-    # first_dict = []
-    # for temps in results1:
-    #     temps_dict = {}
-    #     temps_dict["date"] = Measurement.date
-    #     temps_dict["tobs"] = Measurement.tobs
-    #     first_dict.append(temps_dict)
-
-#  Return the JSON representation of your dictionary.
     return jsonify(first_dict)
 
-# * `/api/v1.0/stations`
 #   * Return a JSON list of stations from the dataset.
 
 @app.route("/api/v1.0/stations")
 def stations():
     results2 = session.query(Station.station, Station.name).all()
-
     sec_dict = list(np.ravel(results2))
-# # #  Convert the query results to a Dictionary.
-# #     sec_dict = []
-# #     for sta in results2:
-# #         station_dict = {}
-# #         station_dict["station"] = Station.station
-# #         station_dict["name"] = Station.name
-# #         sec_dict.append(station_dict)
-
-# # #  Return the JSON representation of your dictionary.
-
     return jsonify(sec_dict)
 
+# # #  Convert the query results to a Dictionary.
+    # sec_dict = []
+    # for sta in results2:
+    #     station_dict = {}
+    #     station_dict["station"] = Station.station
+    #     station_dict["name"] = Station.name
+    #     sec_dict.append(station_dict)
 
-# # * `/api/v1.0/tobs`
+
+
 # #   * Return a JSON list of Temperature Observations (tobs) for the previous year.
 
 @app.route("/api/v1.0/tobs")
 def tobs():
     results3 = session.query(Measurement.date, Measurement.tobs).\
-            filter(Measurement.date>="2016-08-23").\
-            filter(Measurement.date<="2017-08-23").all()
-
-            
+        filter(Measurement.date>="2016-08-23").\
+        filter(Measurement.date<="2017-08-23").all()
     temp_dict = list(np.ravel(results3))
+    return jsonify(temp_dict)
+
 # # #  Convert the query results to a Dic
 
 # #  Convert the query results to a Dictionary.
-#     third_dict = []
-#     for temps in results3:
-#         temp_dict = {}
-#         temp_dict["date"] = Measurement.date
-#         temp_dict["tobs"] = Measurement.tobs
-#         third_dict.append(temp_dict)
-
-# #  Return the JSON representation of your dictionary.
-
-    return jsonify(temp_dict)
-
-
-# # * `/api/v1.0/<start>` and `/api/v1.0/<start>/<end>`
+    # third_dict = []
+    # for temps in results3:
+    #     temp_dict = {}
+    #     temp_dict["date"] = measurement.date
+    #     temp_dict["tobs"] = measurement.tobs
+    #     third_dict.append(temp_dict)
 
 # #   * Return a JSON list of the minimum temperature, the average temperature, and the max temperature for a given start or start-end range.
 
@@ -116,37 +95,17 @@ def tobs():
 
 
 @app.route("/api/v1.0/<date>")
-
 def start1(date):
-
     results4 = session.query((Measurement.date, func.avg(Measurement.tobs), func.max(Measurement.tobs), func.min(Measurement.tobs)).\
-            filter(Measurement.date)>=date).all()
-   
-
-    
-    # temp_dates = list(np.ravel(results4))
-    # #  Convert the query results to a Dictionary.
-    five_dict = []
-    for s in results4:
-        
-        # start_dict = {}
-        # start_dict["Date"] = float(s[0])
-        # start_dict["Avg"] = float(s[1])
-        # start_dict["Min"] = float(s[2])
-        # start_dict["Max"] = float(s[3])
-        # five_dict.append(start_dict)
-
-        start_dict = {}
-        start_dict["Date"] = s.Date
-        start_dict["Avg"] = s.func.avg(Measurement.tobs)
-        start_dict["Min"] = s.func.min(Measurement.tobs)
-        start_dict["Max"] = s.func.max(Measurement.tobs)
-        five_dict.append(start_dict)
-# #  Return the JSON representation of your dictionary.
-
+        filter(Measurement.date)>=date).all()
+    temp_dates = list(np.ravel(results4))
+    start_dict = {}
+    start_dict["Date"] = s.Date
+    start_dict["Avg"] = s.func.avg(Measurement.tobs)
+    start_dict["Min"] = s.func.min(Measurement.tobs)
+    start_dict["Max"] = s.func.max(Measurement.tobs)
+    five_dict.append(start_dict)     
     return jsonify(five_dict)
-    # return jsonify(temp_dates)
-
     
 if __name__ == '__main__':
     app.run(debug=True)
